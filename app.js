@@ -44,7 +44,7 @@ if (isProduction) {
   mongoose.connect("mongodb://127.0.0.1:27017/conduit");
   mongoose.set("debug", true);
 }
-
+require("./models/User");
 app.use(require("./routes"));
 
 /// catch 404 and forward to error handler
