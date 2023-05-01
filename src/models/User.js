@@ -31,7 +31,7 @@ var UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-UserSchema.plugin(uniqueValidator, { message: "is already taken." });
+// UserSchema.plugin(uniqueValidator, { message: "is already taken." });
 
 UserSchema.methods.setPassword = function (password) {
   this.salt = crypto.randomBytes(16).toString("hex");
