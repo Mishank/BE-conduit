@@ -6,6 +6,8 @@ var secret = require("../config").secret;
 
 var UserSchema = new mongoose.Schema(
   {
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
     username: {
       type: String,
@@ -91,14 +93,32 @@ UserSchema.methods.toAuthJSON = function () {
     image: this.image,
   };
 };
+
+UserSchema.methods.follow = function (id) {
+  if (this.following.indexOf(id) === -1) {
+    this.following.push(id);
+  }
+
+  return this.save();
+};
+UserSchema.methods.unfollow = function (id) {
+  this.following.remove(id);
+  return this.save();
+};
+
+UserSchema.methods.isFollowing = function (id) {
+  return this.following.some(function (followId) {
+    return followId.toString() === id.toString();
+  });
+};
+
 UserSchema.methods.toProfileJSONFor = function (user) {
   return {
     username: this.username,
     bio: this.bio,
     image:
       this.image || "https://static.productionready.io/images/smiley-cyrus.jpg",
-    following: false, // we'll implement following functionality in a few chapters :)
+    following: user ? user.isFollowing(this._id) : false,
   };
 };
-
 mongoose.model("User", UserSchema);
