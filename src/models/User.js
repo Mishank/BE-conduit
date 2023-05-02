@@ -31,7 +31,7 @@ var UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// UserSchema.plugin(uniqueValidator, { message: "is already taken." });
+UserSchema.plugin(uniqueValidator, { message: "is already taken." });
 
 UserSchema.methods.setPassword = function (password) {
   this.salt = crypto.randomBytes(16).toString("hex");
@@ -69,6 +69,15 @@ UserSchema.methods.toAuthJSON = function () {
     token: this.generateJWT(),
     bio: this.bio,
     image: this.image,
+  };
+};
+UserSchema.methods.toProfileJSONFor = function (user) {
+  return {
+    username: this.username,
+    bio: this.bio,
+    image:
+      this.image || "https://static.productionready.io/images/smiley-cyrus.jpg",
+    following: false, // we'll implement following functionality in a few chapters :)
   };
 };
 
