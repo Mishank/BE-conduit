@@ -6,6 +6,9 @@ var secret = require("../config").secret;
 
 var UserSchema = new mongoose.Schema(
   {
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
     username: {
       type: String,
       lowercase: true,
@@ -31,7 +34,7 @@ var UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// UserSchema.plugin(uniqueValidator, { message: "is already taken." });
+UserSchema.plugin(uniqueValidator, { message: "is already taken." });
 
 UserSchema.methods.setPassword = function (password) {
   this.salt = crypto.randomBytes(16).toString("hex");
@@ -45,6 +48,25 @@ UserSchema.methods.validPassword = function (password) {
     .pbkdf2Sync(password, this.salt, 10000, 512, "sha512")
     .toString("hex");
   return this.hash === hash;
+};
+
+UserSchema.methods.favorite = function (id) {
+  if (this.favorites.indexOf(id) === -1) {
+    this.favorites.push(id);
+  }
+
+  return this.save();
+};
+
+UserSchema.methods.unfavorite = function (id) {
+  this.favorites.remove(id);
+  return this.save();
+};
+
+UserSchema.methods.isFavorite = function (id) {
+  return this.favorites.some(function (favoriteId) {
+    return favoriteId.toString() === id.toString();
+  });
 };
 
 UserSchema.methods.generateJWT = function () {
@@ -72,4 +94,31 @@ UserSchema.methods.toAuthJSON = function () {
   };
 };
 
+UserSchema.methods.follow = function (id) {
+  if (this.following.indexOf(id) === -1) {
+    this.following.push(id);
+  }
+
+  return this.save();
+};
+UserSchema.methods.unfollow = function (id) {
+  this.following.remove(id);
+  return this.save();
+};
+
+UserSchema.methods.isFollowing = function (id) {
+  return this.following.some(function (followId) {
+    return followId.toString() === id.toString();
+  });
+};
+
+UserSchema.methods.toProfileJSONFor = function (user) {
+  return {
+    username: this.username,
+    bio: this.bio,
+    image:
+      this.image || "https://static.productionready.io/images/smiley-cyrus.jpg",
+    following: user ? user.isFollowing(this._id) : false,
+  };
+};
 mongoose.model("User", UserSchema);
