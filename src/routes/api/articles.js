@@ -208,15 +208,6 @@ router.delete(
   }
 );
 
-router.get("/", function (req, res, next) {
-  Article.find()
-    .distinct("tagList")
-    .then(function (tags) {
-      return res.json({ tags: tags });
-    })
-    .catch(next);
-});
-
 router.get("/", auth.optional, function (req, res, next) {
   var query = {};
   var limit = 20;
@@ -282,11 +273,13 @@ router.get("/feed", auth.required, function (req, res, next) {
   var limit = 20;
   var offset = 0;
 
-  if (typeof req.query.limit !== "undefined") {
+  if (typeof req.query.limit) {
+    //!== "undefined" не работает код
     limit = req.query.limit;
   }
 
-  if (typeof req.query.offset !== "undefined") {
+  if (typeof req.query.offset) {
+    //!== "undefined" не работает код
     offset = req.query.offset;
   }
 
