@@ -9,7 +9,7 @@ var ArticleSchema = new mongoose.Schema(
     description: String,
     body: String,
     favoritesCount: { type: Number, default: 0 },
-
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     tagList: [{ type: String }],
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
@@ -42,12 +42,13 @@ ArticleSchema.methods.toJSONFor = function (user) {
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
     tagList: this.tagList,
-    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     favorited: user ? user.isFavorite(this._id) : false,
     favoritesCount: this.favoritesCount,
     author: this.author.toProfileJSONFor(user),
   };
 };
+
+mongoose.model("Article", ArticleSchema);
 
 ArticleSchema.methods.updateFavoriteCount = function () {
   var article = this;

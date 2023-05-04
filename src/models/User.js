@@ -6,9 +6,6 @@ var secret = require("../config").secret;
 
 var UserSchema = new mongoose.Schema(
   {
-    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-
-    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
     username: {
       type: String,
       lowercase: true,
@@ -16,6 +13,8 @@ var UserSchema = new mongoose.Schema(
       required: [true, "can't be blank"],
       match: [/^[a-zA-Z0-9]+$/, "is invalid"],
       index: true,
+      following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Article" }],
     },
 
     email: {
