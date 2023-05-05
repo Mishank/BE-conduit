@@ -273,12 +273,12 @@ router.get("/feed", auth.required, function (req, res, next) {
   var limit = 20;
   var offset = 0;
 
-  if (typeof req.query.limit) {
+  if (typeof req.query.limit !== "undefined") {
     //!== "undefined" не работает код
     limit = req.query.limit;
   }
 
-  if (typeof req.query.offset) {
+  if (typeof req.query.offset !== "undefined") {
     //!== "undefined" не работает код
     offset = req.query.offset;
   }
