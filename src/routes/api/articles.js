@@ -257,30 +257,15 @@ router.get("/", auth.optional, function (req, res, next) {
     .catch(next);
 });
 
-// router.get("/:article", auth.optional, function (req, res, next) {
-//   Promise.all([
-//     req.payload ? User.findById(req.payload.id) : null,
-//     req.article.populate("author").execPopulate(),
-//   ])
-//     .then(function (results) {
-//       var user = results[0];
-
-//       return res.json({ article: req.article.toJSONFor(user) });
-//     })
-//     .catch(next);
-// });
-
 router.get("/feed", auth.required, function (req, res, next) {
   var limit = 20;
   var offset = 0;
 
   if (typeof req.query.limit !== "undefined") {
-    //!== "undefined" не работает код
     limit = req.query.limit;
   }
 
   if (typeof req.query.offset !== "undefined") {
-    //!== "undefined" не работает код
     offset = req.query.offset;
   }
 
@@ -310,6 +295,19 @@ router.get("/feed", auth.required, function (req, res, next) {
       })
       .catch(next);
   });
+});
+
+router.get("/:article", auth.optional, function (req, res, next) {
+  Promise.all([
+    req.payload ? User.findById(req.payload.id) : null,
+    req.article.populate("author").execPopulate(),
+  ])
+    .then(function (results) {
+      var user = results[0];
+
+      return res.json({ article: req.article.toJSONFor(user) });
+    })
+    .catch(next);
 });
 
 console.log({ router });
