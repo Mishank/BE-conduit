@@ -80,7 +80,7 @@ router.put("/:article", auth.required, function (req, res, next) {
   });
 });
 
-router.delete("/:article", auth.required, function (req, res, next) {
+router.delete("/:article", auth.required, function (req, res, next) { // не работает роут 
   User.findById(req.payload.id).then(function () {
     if (req.article.author._id.toString() === req.payload.id.toString()) {
       return req.article.remove().then(function () {
@@ -129,7 +129,7 @@ router.delete("/:article/favorite", auth.required, function (req, res, next) {
     .catch(next);
 });
 
-router.post("/:article/comments", auth.required, function (req, res, next) {
+router.post("/:article/comments", auth.required, function (req, res, next) { //не работает
   User.findById(req.payload.id)
     .then(function (user) {
       if (!user) {
