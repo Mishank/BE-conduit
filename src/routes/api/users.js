@@ -13,10 +13,9 @@ router.post("/users", function (req, res, next) {
 });
 
 router.post("/users/login", function (req, res, next) {
-  // какие параметры я должен передаю в функцию ?
-  // рефактор
   const userReq = req.body.user;
-  login(userReq, res, next);
+
+  login(userReq, req, res, next);
 });
 
 router.get("/user", auth.required, function (req, res, next) {

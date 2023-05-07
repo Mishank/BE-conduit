@@ -1,5 +1,6 @@
 var mongoose = require("mongoose");
 const UserModel = mongoose.model("User");
+var passport = require("passport");
 
 function register(userReq, res, next) {
   let user = new UserModel();
@@ -16,15 +17,16 @@ function register(userReq, res, next) {
     .catch(next);
 }
 
-function login(userReq, res, next) {
-  if (!userReq.body.user.email) {
+function login(userReq, req, res, next) {
+  if (!userReq.email) {
     return res.status(422).json({ errors: { email: "can't be blank" } });
   }
 
-  if (!userReq.body.user.password) {
+  if (!userReq.password) {
     return res.status(422).json({ errors: { password: "can't be blank" } });
   }
 
+  // TODO move this to middleware
   passport.authenticate(
     "local",
     { session: false },
@@ -40,7 +42,7 @@ function login(userReq, res, next) {
         return res.status(422).json(info);
       }
     }
-  )(userReq, res, next);
+  )(req, res, next);
 }
 
 module.exports = { register, login };
