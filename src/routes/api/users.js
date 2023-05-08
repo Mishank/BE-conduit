@@ -4,7 +4,7 @@ var passport = require("passport");
 
 var User = mongoose.model("User");
 var auth = require("../auth");
-const { register, login } = require("../../services/user.service");
+const { register, login, user } = require("../../services/user.service");
 
 router.post("/users", function (req, res, next) {
   const userReq = req.body.user;
@@ -19,15 +19,10 @@ router.post("/users/login", function (req, res, next) {
 });
 
 router.get("/user", auth.required, function (req, res, next) {
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
+  //рефактор user
+  const userReq = req.body.user;
 
-      return res.json({ user: user.toAuthJSON() });
-    })
-    .catch(next);
+  user(userReq, req, res, next);
 });
 
 router.put("/user", auth.required, function (req, res, next) {

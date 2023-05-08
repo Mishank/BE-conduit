@@ -45,4 +45,16 @@ function login(userReq, req, res, next) {
   )(req, res, next);
 }
 
-module.exports = { register, login };
+function user(userReq, res, next) {  //Refactor user 
+  User.findById(userReq.payload.id)
+    .then(function (user) {
+      if (!user) {
+        return res.sendStatus(401);
+      }
+
+      return res.json({ user: user.toAuthJSON() });
+    })
+    .catch(next);
+}
+
+module.exports = { register, login, user };

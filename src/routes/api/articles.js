@@ -20,20 +20,6 @@ router.param("article", function (req, res, next, slug) {
     .catch(next);
 });
 
-router.param("comment", function (req, res, next, id) {
-  Comment.findById(id)
-    .then(function (comment) {
-      if (!comment) {
-        return res.sendStatus(404);
-      }
-
-      req.comment = comment;
-
-      return next();
-    })
-    .catch(next);
-});
-
 router.post("/", auth.required, function (req, res, next) {
   User.findById(req.payload.id)
     .then(function (user) {
@@ -80,7 +66,8 @@ router.put("/:article", auth.required, function (req, res, next) {
   });
 });
 
-router.delete("/:article", auth.required, function (req, res, next) { // не работает роут 
+router.delete("/:article", auth.required, function (req, res, next) {
+  // не работает роут
   User.findById(req.payload.id).then(function () {
     if (req.article.author._id.toString() === req.payload.id.toString()) {
       return req.article.remove().then(function () {
@@ -129,7 +116,8 @@ router.delete("/:article/favorite", auth.required, function (req, res, next) {
     .catch(next);
 });
 
-router.post("/:article/comments", auth.required, function (req, res, next) { //не работает
+router.post("/:article/comments", auth.required, function (req, res, next) {
+  //не работает
   User.findById(req.payload.id)
     .then(function (user) {
       if (!user) {
@@ -174,6 +162,20 @@ router.get("/:article/comments", auth.optional, function (req, res, next) {
             }),
           });
         });
+    })
+    .catch(next);
+});
+
+router.param("comment", function (req, res, next, id) {
+  Comment.findById(id)
+    .then(function (comment) {
+      if (!comment) {
+        return res.sendStatus(404);
+      }
+
+      req.comment = comment;
+
+      return next();
     })
     .catch(next);
 });
