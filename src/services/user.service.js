@@ -1,6 +1,7 @@
 var mongoose = require("mongoose");
 const UserModel = mongoose.model("User");
 var passport = require("passport");
+var User = mongoose.model("User");
 
 function register(userReq, res, next) {
   let user = new UserModel();
@@ -45,8 +46,10 @@ function login(userReq, req, res, next) {
   )(req, res, next);
 }
 
-function user(userReq, res, next) {  //Refactor user 
-  User.findById(userReq.payload.id)
+function user(userReq, req, res, next) {
+  //Refactor user
+
+  User.findById(req.payload.id)
     .then(function (user) {
       if (!user) {
         return res.sendStatus(401);
