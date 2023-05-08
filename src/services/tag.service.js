@@ -2,7 +2,7 @@ var router = require("express").Router();
 var mongoose = require("mongoose");
 var Article = mongoose.model("Article");
 
-function tag() {
+function tag(userReq, req, res, next) {
   Article.find()
     .distinct("tagList")
     .then(function (tags) {
