@@ -5,6 +5,8 @@ var Article = mongoose.model("Article");
 var User = mongoose.model("User");
 var auth = require("../auth");
 
+const { article } = require("../../services/article.service");
+
 router.param("article", function (req, res, next, slug) {
   Article.findOne({ slug: slug })
     .populate("author")
@@ -21,22 +23,10 @@ router.param("article", function (req, res, next, slug) {
 });
 
 router.post("/", auth.required, function (req, res, next) {
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
+  //refactor
+ const userReq = req.body.user;
 
-      var article = new Article(req.body.article);
-
-      article.author = user;
-
-      return article.save().then(function () {
-        console.log(article.author);
-        return res.json({ article: article.toJSONFor(user) });
-      });
-    })
-    .catch(next);
+ article(userReq, req, res, next);
 });
 
 router.put("/:article", auth.required, function (req, res, next) {
@@ -140,6 +130,7 @@ router.post("/:article/comments", auth.required, function (req, res, next) {
 });
 
 router.get("/:article/comments", auth.optional, function (req, res, next) {
+  //не работает
   Promise.resolve(req.payload ? User.findById(req.payload.id) : null)
     .then(function (user) {
       return req.article
@@ -167,6 +158,7 @@ router.get("/:article/comments", auth.optional, function (req, res, next) {
 });
 
 router.param("comment", function (req, res, next, id) {
+  //не работает
   Comment.findById(id)
     .then(function (comment) {
       if (!comment) {
