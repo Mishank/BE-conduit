@@ -9,6 +9,7 @@ const {
   article,
   articleFeed,
   articleParam,
+  articlePut,
 } = require("../../services/article.service");
 
 router.param("article", function (req, res, next, slug) {
@@ -26,30 +27,10 @@ router.post("/", auth.required, function (req, res, next) {
 });
 
 router.put("/:article", auth.required, function (req, res, next) {
-  User.findById(req.payload.id).then(function (user) {
-    if (req.article.author._id.toString() === req.payload.id.toString()) {
-      if (typeof req.body.article.title !== "undefined") {
-        req.article.title = req.body.article.title;
-      }
+  //refactor
+  const userReq = req.body.user;
 
-      if (typeof req.body.article.description !== "undefined") {
-        req.article.description = req.body.article.description;
-      }
-
-      if (typeof req.body.article.body !== "undefined") {
-        req.article.body = req.body.article.body;
-      }
-
-      req.article
-        .save()
-        .then(function (article) {
-          return res.json({ article: article.toJSONFor(user) });
-        })
-        .catch(next);
-    } else {
-      return res.sendStatus(403);
-    }
-  });
+  articlePut(userReq, req, res, next);
 });
 
 router.delete("/:article", auth.required, function (req, res, next) {
