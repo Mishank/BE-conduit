@@ -15,5 +15,20 @@ function getUsername(userReq, req, res, next) {
     return res.json({ profile: req.profile.toProfileJSONFor(false) });
   }
 }
+function userFollow(userReq, req, res, next) {
+  var profileId = req.profile._id;
 
-module.exports = { getUsername };
+  User.findById(req.payload.id)
+    .then(function (user) {
+      if (!user) {
+        return res.sendStatus(401);
+      }
+
+      return user.follow(profileId).then(function () {
+        return res.json({ profile: req.profile.toProfileJSONFor(user) });
+      });
+    })
+    .catch(next);
+}
+
+module.exports = { getUsername, userFollow };

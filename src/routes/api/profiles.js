@@ -3,7 +3,7 @@ var mongoose = require("mongoose");
 var User = mongoose.model("User");
 var auth = require("../auth");
 
-const { getUsername } = require("../../services/profiles.service");
+const { getUsername, userFollow } = require("../../services/profiles.service");
 
 router.param("username", function (req, res, next, username) {
   User.findOne({ username: username })
@@ -26,19 +26,10 @@ router.get("/:username", auth.optional, function (req, res, next) {
 });
 
 router.post("/:username/follow", auth.required, function (req, res, next) {
-  var profileId = req.profile._id;
+  //Refactor
+  const userReq = req.body.user;
 
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
-
-      return user.follow(profileId).then(function () {
-        return res.json({ profile: req.profile.toProfileJSONFor(user) });
-      });
-    })
-    .catch(next);
+  userFollow(userReq, req, res, next);
 });
 
 router.delete("/:username/follow", auth.required, function (req, res, next) {
