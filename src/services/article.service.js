@@ -62,5 +62,19 @@ function articleFeed(userReq, req, res, next) {
       .catch(next);
   });
 }
+function articleParam(userReq, req, res, next) {
+  Article.findOne({ slug: slug })
+    .populate("author")
+    .then(function (article) {
+      if (!article) {
+        return res.sendStatus(404);
+      }
 
-module.exports = { article, articleFeed };
+      req.article = article;
+
+      return next();
+    })
+    .catch(next);
+}
+
+module.exports = { article, articleFeed, articleParam };

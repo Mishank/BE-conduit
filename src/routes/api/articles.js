@@ -5,21 +5,17 @@ var Article = mongoose.model("Article");
 var User = mongoose.model("User");
 var auth = require("../auth");
 
-const { article, articleFeed } = require("../../services/article.service");
+const {
+  article,
+  articleFeed,
+  articleParam,
+} = require("../../services/article.service");
 
 router.param("article", function (req, res, next, slug) {
-  Article.findOne({ slug: slug })
-    .populate("author")
-    .then(function (article) {
-      if (!article) {
-        return res.sendStatus(404);
-      }
+  //refactor
+  const userReq = req.body.user;
 
-      req.article = article;
-
-      return next();
-    })
-    .catch(next);
+  articleParam(userReq, req, res, next);
 });
 
 router.post("/", auth.required, function (req, res, next) {
@@ -270,7 +266,5 @@ router.get("/:article", auth.optional, function (req, res, next) {
     })
     .catch(next);
 });
-
-
 
 module.exports = router;
