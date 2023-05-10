@@ -5,7 +5,7 @@ var Article = mongoose.model("Article");
 var User = mongoose.model("User");
 var auth = require("../auth");
 
-const { article } = require("../../services/article.service");
+const { article, articleFeed } = require("../../services/article.service");
 
 router.param("article", function (req, res, next, slug) {
   Article.findOne({ slug: slug })
@@ -24,9 +24,9 @@ router.param("article", function (req, res, next, slug) {
 
 router.post("/", auth.required, function (req, res, next) {
   //refactor
- const userReq = req.body.user;
+  const userReq = req.body.user;
 
- article(userReq, req, res, next);
+  article(userReq, req, res, next);
 });
 
 router.put("/:article", auth.required, function (req, res, next) {
@@ -252,43 +252,10 @@ router.get("/", auth.optional, function (req, res, next) {
 });
 
 router.get("/feed", auth.required, function (req, res, next) {
-  var limit = 20;
-  var offset = 0;
+  //refactor
+  const userReq = req.body.user;
 
-  if (typeof req.query.limit !== "undefined") {
-    limit = req.query.limit;
-  }
-
-  if (typeof req.query.offset !== "undefined") {
-    offset = req.query.offset;
-  }
-
-  User.findById(req.payload.id).then(function (user) {
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    Promise.all([
-      Article.find({ author: { $in: user.following } })
-        .limit(Number(limit))
-        .skip(Number(offset))
-        .populate("author")
-        .exec(),
-      Article.count({ author: { $in: user.following } }),
-    ])
-      .then(function (results) {
-        var articles = results[0];
-        var articlesCount = results[1];
-
-        return res.json({
-          articles: articles.map(function (article) {
-            return article.toJSONFor(user);
-          }),
-          articlesCount: articlesCount,
-        });
-      })
-      .catch(next);
-  });
+  articleFeed(userReq, req, res, next);
 });
 
 router.get("/:article", auth.optional, function (req, res, next) {
@@ -304,6 +271,6 @@ router.get("/:article", auth.optional, function (req, res, next) {
     .catch(next);
 });
 
-console.log({ router });
+
 
 module.exports = router;
