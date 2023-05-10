@@ -5,6 +5,8 @@ var Article = mongoose.model("Article");
 var User = mongoose.model("User");
 var auth = require("../auth");
 
+const { article } = require("../../services/article.service");
+
 router.param("article", function (req, res, next, slug) {
   Article.findOne({ slug: slug })
     .populate("author")
@@ -20,37 +22,11 @@ router.param("article", function (req, res, next, slug) {
     .catch(next);
 });
 
-router.param("comment", function (req, res, next, id) {
-  Comment.findById(id)
-    .then(function (comment) {
-      if (!comment) {
-        return res.sendStatus(404);
-      }
-
-      req.comment = comment;
-
-      return next();
-    })
-    .catch(next);
-});
-
 router.post("/", auth.required, function (req, res, next) {
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
+  //refactor
+ const userReq = req.body.user;
 
-      var article = new Article(req.body.article);
-
-      article.author = user;
-
-      return article.save().then(function () {
-        console.log(article.author);
-        return res.json({ article: article.toJSONFor(user) });
-      });
-    })
-    .catch(next);
+ article(userReq, req, res, next);
 });
 
 router.put("/:article", auth.required, function (req, res, next) {
@@ -80,7 +56,8 @@ router.put("/:article", auth.required, function (req, res, next) {
   });
 });
 
-router.delete("/:article", auth.required, function (req, res, next) { // не работает роут 
+router.delete("/:article", auth.required, function (req, res, next) {
+  // не работает роут
   User.findById(req.payload.id).then(function () {
     if (req.article.author._id.toString() === req.payload.id.toString()) {
       return req.article.remove().then(function () {
@@ -129,7 +106,8 @@ router.delete("/:article/favorite", auth.required, function (req, res, next) {
     .catch(next);
 });
 
-router.post("/:article/comments", auth.required, function (req, res, next) { //не работает
+router.post("/:article/comments", auth.required, function (req, res, next) {
+  //не работает
   User.findById(req.payload.id)
     .then(function (user) {
       if (!user) {
@@ -152,6 +130,7 @@ router.post("/:article/comments", auth.required, function (req, res, next) { //�
 });
 
 router.get("/:article/comments", auth.optional, function (req, res, next) {
+  //не работает
   Promise.resolve(req.payload ? User.findById(req.payload.id) : null)
     .then(function (user) {
       return req.article
@@ -174,6 +153,21 @@ router.get("/:article/comments", auth.optional, function (req, res, next) {
             }),
           });
         });
+    })
+    .catch(next);
+});
+
+router.param("comment", function (req, res, next, id) {
+  //не работает
+  Comment.findById(id)
+    .then(function (comment) {
+      if (!comment) {
+        return res.sendStatus(404);
+      }
+
+      req.comment = comment;
+
+      return next();
     })
     .catch(next);
 });

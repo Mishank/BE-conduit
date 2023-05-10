@@ -1,14 +1,12 @@
 var router = require("express").Router();
 var mongoose = require("mongoose");
 var Article = mongoose.model("Article");
+const { tag } = require("../../services/tag.service");
 
 router.get("/", function (req, res, next) {
-  Article.find()
-    .distinct("tagList")
-    .then(function (tags) {
-      return res.json({ tags: tags });
-    })
-    .catch(next);
+  const userReq = req.body.user;
+
+  tag(userReq, req, res, next);
 });
 
 module.exports = router;
