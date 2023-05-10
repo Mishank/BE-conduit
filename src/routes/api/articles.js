@@ -8,16 +8,24 @@ var auth = require("../auth");
 const {
   article,
   articleFeed,
-  articleParam,
   articlePut,
-  articleGet,
+  getSlash,
+  getArticle,
 } = require("../../services/article.service");
 
 router.param("article", function (req, res, next, slug) {
-  //refactor
-  const userReq = req.body.user;
+  Article.findOne({ slug: slug })
+    .populate("author")
+    .then(function (article) {
+      if (!article) {
+        return res.sendStatus(404);
+      }
 
-  articleParam(userReq, req, res, next);
+      req.article = article;
+
+      return next();
+    })
+    .catch(next);
 });
 
 router.post("/", auth.required, function (req, res, next) {
@@ -172,7 +180,7 @@ router.get("/", auth.optional, function (req, res, next) {
   //refactor
   const userReq = req.body.user;
 
-  articleGet(userReq, req, res, next);
+  getSlash(userReq, req, res, next);
 });
 
 router.get("/feed", auth.required, function (req, res, next) {
@@ -183,16 +191,10 @@ router.get("/feed", auth.required, function (req, res, next) {
 });
 
 router.get("/:article", auth.optional, function (req, res, next) {
-  Promise.all([
-    req.payload ? User.findById(req.payload.id) : null,
-    req.article.populate("author").execPopulate(),
-  ])
-    .then(function (results) {
-      var user = results[0];
+  //refactor
+  const userReq = req.body.user;
 
-      return res.json({ article: req.article.toJSONFor(user) });
-    })
-    .catch(next);
+  getArticle(userReq, req, res, next);
 });
 
 module.exports = router;

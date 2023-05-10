@@ -62,20 +62,6 @@ function articleFeed(userReq, req, res, next) {
       .catch(next);
   });
 }
-function articleParam(userReq, req, res, next) {
-  Article.findOne({ slug: slug })
-    .populate("author")
-    .then(function (article) {
-      if (!article) {
-        return res.sendStatus(404);
-      }
-
-      req.article = article;
-
-      return next();
-    })
-    .catch(next);
-}
 
 function articlePut(userReq, req, res, next) {
   User.findById(req.payload.id).then(function (user) {
@@ -104,7 +90,7 @@ function articlePut(userReq, req, res, next) {
   });
 }
 
-function articleGet() {
+function getSlash(userReq, req, res, next) {
   var query = {};
   var limit = 20;
   var offset = 0;
@@ -165,4 +151,17 @@ function articleGet() {
     .catch(next);
 }
 
-module.exports = { article, articleFeed, articleParam, articlePut, articleGet };
+function getArticle(userReq, req, res, next) {
+  Promise.all([
+    req.payload ? User.findById(req.payload.id) : null,
+    req.article.populate("author").execPopulate(),
+  ])
+    .then(function (results) {
+      var user = results[0];
+
+      return res.json({ article: req.article.toJSONFor(user) });
+    })
+    .catch(next);
+}
+
+module.exports = { article, articleFeed, articlePut, getSlash, getArticle };
