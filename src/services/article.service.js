@@ -182,4 +182,30 @@ function articleFavorite(userReq, req, res, next) {
     .catch(next);
 }
 
-module.exports = { article, articleFeed, articlePut, getSlash, getArticle,articleFavorite };
+function articleUnFavorite(userReq, req, res, next) {
+  var articleId = req.article._id;
+
+  User.findById(req.payload.id)
+    .then(function (user) {
+      if (!user) {
+        return res.sendStatus(401);
+      }
+
+      return user.unfavorite(articleId).then(function () {
+        return req.article.updateFavoriteCount().then(function (article) {
+          return res.json({ article: article.toJSONFor(user) });
+        });
+      });
+    })
+    .catch(next);
+}
+
+module.exports = {
+  article,
+  articleFeed,
+  articlePut,
+  getSlash,
+  getArticle,
+  articleFavorite,
+  articleUnFavorite,
+};
