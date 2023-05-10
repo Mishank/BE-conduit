@@ -11,6 +11,7 @@ const {
   articlePut,
   getSlash,
   getArticle,
+  articleFavorite,
 } = require("../../services/article.service");
 
 router.param("article", function (req, res, next, slug) {
@@ -56,21 +57,10 @@ router.delete("/:article", auth.required, function (req, res, next) {
 });
 
 router.post("/:article/favorite", auth.required, function (req, res, next) {
-  var articleId = req.article._id;
+  //refactor
+  const userReq = req.body.user;
 
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
-
-      return user.favorite(articleId).then(function () {
-        return req.article.updateFavoriteCount().then(function (article) {
-          return res.json({ article: article.toJSONFor(user) });
-        });
-      });
-    })
-    .catch(next);
+  articleFavorite(userReq, req, res, next);
 });
 
 // Unfavorite an article
