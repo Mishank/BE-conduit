@@ -3,6 +3,8 @@ var mongoose = require("mongoose");
 var User = mongoose.model("User");
 var auth = require("../auth");
 
+const { getUsername, userFollow } = require("../../services/profiles.service");
+
 router.param("username", function (req, res, next, username) {
   User.findOne({ username: username })
     .then(function (user) {
@@ -17,33 +19,17 @@ router.param("username", function (req, res, next, username) {
     .catch(next);
 });
 router.get("/:username", auth.optional, function (req, res, next) {
-  if (req.payload) {
-    User.findById(req.payload.id).then(function (user) {
-      if (!user) {
-        return res.json({ profile: req.profile.toProfileJSONFor(false) });
-      }
+  //Refactor
+  const userReq = req.body.user;
 
-      return res.json({ profile: req.profile.toProfileJSONFor(user) });
-    });
-  } else {
-    return res.json({ profile: req.profile.toProfileJSONFor(false) });
-  }
+  getUsername(userReq, req, res, next);
 });
 
 router.post("/:username/follow", auth.required, function (req, res, next) {
-  var profileId = req.profile._id;
+  //Refactor
+  const userReq = req.body.user;
 
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
-
-      return user.follow(profileId).then(function () {
-        return res.json({ profile: req.profile.toProfileJSONFor(user) });
-      });
-    })
-    .catch(next);
+  userFollow(userReq, req, res, next);
 });
 
 router.delete("/:username/follow", auth.required, function (req, res, next) {
