@@ -1,17 +1,20 @@
-var mongoose = require("mongoose");
-var uniqueValidator = require("mongoose-unique-validator");
-var slug = require("slug"); // package we'll use to auto create URL slugs
-var User = mongoose.model("User");
-var ArticleSchema = new mongoose.Schema(
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const slug = require("slug");
+
+// const User = mongoose.model("User");
+// const Comment = mongoose.model("Comment");
+
+const ArticleSchema = new mongoose.Schema(
   {
     slug: { type: String, lowercase: true, unique: true },
     title: String,
     description: String,
     body: String,
     favoritesCount: { type: Number, default: 0 },
-    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     tagList: [{ type: String }],
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
   },
   { timestamps: true }
 );
@@ -43,15 +46,13 @@ ArticleSchema.methods.toJSONFor = function (user) {
     updatedAt: this.updatedAt,
     tagList: this.tagList,
     // favorited: user ? user.isFavorite(this._id) : false,
-    // favoritesCount: this.favoritesCount,
+    // favoritesCount: this.favoriteCount,
     // author: this.author.toProfileJSONFor(user),
   };
 };
 
-mongoose.model("Article", ArticleSchema);
-
 ArticleSchema.methods.updateFavoriteCount = function () {
-  var article = this;
+  const article = this;
 
   return User.count({ favorites: { $in: [article._id] } }).then(function (
     count
@@ -61,4 +62,5 @@ ArticleSchema.methods.updateFavoriteCount = function () {
     return article.save();
   });
 };
+
 mongoose.model("Article", ArticleSchema);

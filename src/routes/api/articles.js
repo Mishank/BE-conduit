@@ -1,10 +1,11 @@
-var router = require("express").Router();
-var passport = require("passport");
-var mongoose = require("mongoose");
-var Article = mongoose.model("Article");
-var User = mongoose.model("User");
-var Comment = mongoose.model("Comment");
-var auth = require("../auth");
+const router = require("express").Router();
+const passport = require("passport");
+const mongoose = require("mongoose");
+
+const Article = mongoose.model("Article");
+const User = mongoose.model("User");
+const Comment = mongoose.model("Comment");
+const auth = require("../auth");
 
 const {
   article,
@@ -74,30 +75,30 @@ router.delete("/:article/favorite", auth.required, function (req, res, next) {
 });
 
 router.post("/:article/comments", auth.required, function (req, res, next) {
-  //not working
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
+  User.findById(req.payload.id).then(function (user) {
+    if (!user) {
+      return res.sendStatus(401);
+    }
 
-      var comment = new Comment(req.body.comment);
-      comment.article = req.article;
-      comment.author = user;
+    var comment = new Comment(req.body.comment);
+    comment.article = req.article;
+    comment.author = user;
 
-      return comment.save().then(function () {
-        req.article.comments.push(comment);
+    return comment
+      .save()
+      .then(function () {
+        console.log("req.article: ", req.article);
+        req.article.comments.concat(comment);
 
         return req.article.save().then(function (article) {
           res.json({ comment: comment.toJSONFor(user) });
         });
-      });
-    })
-    .catch(next);
+      })
+      .catch(next);
+  });
 });
 
 router.get("/:article/comments", auth.optional, function (req, res, next) {
-  //не работает
   Promise.resolve(req.payload ? User.findById(req.payload.id) : null)
     .then(function (user) {
       return req.article
@@ -114,6 +115,7 @@ router.get("/:article/comments", auth.optional, function (req, res, next) {
         })
         .execPopulate()
         .then(function (article) {
+          console.log("req.article.comments", req.article.comments);
           return res.json({
             comments: req.article.comments.map(function (comment) {
               return comment.toJSONFor(user);
