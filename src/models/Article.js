@@ -3,7 +3,8 @@ const uniqueValidator = require("mongoose-unique-validator");
 const slug = require("slug");
 
 // const User = mongoose.model("User");
-// const Comment = mongoose.model("Comment");
+// const Comment = mongoose.model("Comment");\
+//changes
 
 const ArticleSchema = new mongoose.Schema(
   {
@@ -54,9 +55,13 @@ ArticleSchema.methods.toJSONFor = function (user) {
 ArticleSchema.methods.updateFavoriteCount = function () {
   const article = this;
 
+
   return User.count({ favorites: { $in: [article._id] } }).then(function (
     count
-  ) {
+
+  )
+   {
+
     article.favoritesCount = count;
 
     return article.save();
