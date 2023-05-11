@@ -200,28 +200,6 @@ function articleUnFavorite(userReq, req, res, next) {
     .catch(next);
 }
 
-function deleteCommentforArticle(userReq, req, res, next) {
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
-
-      var comment = new Comment(req.body.comment);
-      comment.article = req.article;
-      comment.author = user;
-
-      return comment.save().then(function () {
-        req.article.comments.push(comment);
-
-        return req.article.save().then(function (article) {
-          res.json({ comment: comment.toJSONFor(user) });
-        });
-      });
-    })
-    .catch(next);
-}
-
 module.exports = {
   article,
   articleFeed,
@@ -230,5 +208,4 @@ module.exports = {
   getArticle,
   articleFavorite,
   articleUnFavorite,
-  deleteCommentforArticle,
 };
