@@ -75,26 +75,25 @@ router.delete("/:article/favorite", auth.required, function (req, res, next) {
 });
 
 router.post("/:article/comments", auth.required, function (req, res, next) {
-  User.findById(req.payload.id).then(function (user) {
+  User.findById(req.payload.id).then(async function (user) {
     if (!user) {
       return res.sendStatus(401);
     }
 
-    var comment = new Comment(req.body.comment);
+    let article = await Article.findOne({ slug: req.params.article });
+    let comment = new Comment(req.body.comment);
     comment.article = req.article;
     comment.author = user;
 
-    return comment
-      .save()
-      .then(function () {
-        console.log("req.article: ", req.article);
-        req.article.comments.concat(comment);
+    try {
+      await comment.save();
+      article.comments.push(comment);
+      await article.save();
+    } catch (e) {
+      console.log(e);
+    }
 
-        return req.article.save().then(function (article) {
-          res.json({ comment: comment.toJSONFor(user) });
-        });
-      })
-      .catch(next);
+    return res.json({ comment: comment.toJSONFor(user) });
   });
 });
 
