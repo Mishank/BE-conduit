@@ -15,6 +15,7 @@ const {
   getArticle,
   articleFavorite,
   articleUnFavorite,
+  createComment,
 } = require("../../services/article.service");
 
 router.param("article", function (req, res, next, slug) {
@@ -75,26 +76,10 @@ router.delete("/:article/favorite", auth.required, function (req, res, next) {
 });
 
 router.post("/:article/comments", auth.required, function (req, res, next) {
-  User.findById(req.payload.id).then(async function (user) {
-    if (!user) {
-      return res.sendStatus(401);
-    }
+  //Refactor
+  const userReq = req.body.user;
 
-    let article = await Article.findOne({ slug: req.params.article });
-    let comment = new Comment(req.body.comment);
-    comment.article = req.article;
-    comment.author = user;
-
-    try {
-      await comment.save();
-      article.comments.push(comment);
-      await article.save();
-    } catch (e) {
-      console.log(e);
-    }
-
-    return res.json({ comment: comment.toJSONFor(user) });
-  });
+  createComment(userReq, req, res, next);
 });
 
 router.get("/:article/comments", auth.optional, function (req, res, next) {

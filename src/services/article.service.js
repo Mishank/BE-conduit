@@ -2,6 +2,7 @@ var mongoose = require("mongoose");
 var Article = mongoose.model("Article");
 var User = mongoose.model("User");
 
+
 function article(userReq, req, res, next) {
   User.findById(req.payload.id)
     .then(function (user) {
@@ -198,6 +199,29 @@ function articleUnFavorite(userReq, req, res, next) {
     .catch(next);
 }
 
+function createComment(userReq, req, res, next) {
+  User.findById(req.payload.id).then(async function (user) {
+    if (!user) {
+      return res.sendStatus(401);
+    }
+
+    let article = await Article.findOne({ slug: req.params.article });
+    let comment = new Comment(req.body.comment);
+    comment.article = req.article;
+    comment.author = user;
+
+    try {
+      await comment.save();
+      article.comments.push(comment);
+      await article.save();
+    } catch (e) {
+      console.log(e);
+    }
+
+    return res.json({ comment: comment.toJSONFor(user) });
+  });
+}
+
 module.exports = {
   article,
   articleFeed,
@@ -206,4 +230,5 @@ module.exports = {
   getArticle,
   articleFavorite,
   articleUnFavorite,
+  createComment,
 };
