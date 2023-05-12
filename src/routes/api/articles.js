@@ -1,9 +1,11 @@
-var router = require("express").Router();
-var passport = require("passport");
-var mongoose = require("mongoose");
-var Article = mongoose.model("Article");
-var User = mongoose.model("User");
-var auth = require("../auth");
+const router = require("express").Router();
+const passport = require("passport");
+const mongoose = require("mongoose");
+
+const Article = mongoose.model("Article");
+const User = mongoose.model("User");
+const Comment = mongoose.model("Comment");
+const auth = require("../auth");
 
 const {
   article,
@@ -73,30 +75,29 @@ router.delete("/:article/favorite", auth.required, function (req, res, next) {
 });
 
 router.post("/:article/comments", auth.required, function (req, res, next) {
-  //не работает
-  User.findById(req.payload.id)
-    .then(function (user) {
-      if (!user) {
-        return res.sendStatus(401);
-      }
+  User.findById(req.payload.id).then(async function (user) {
+    if (!user) {
+      return res.sendStatus(401);
+    }
 
-      var comment = new Comment(req.body.comment);
-      comment.article = req.article;
-      comment.author = user;
+    let article = await Article.findOne({ slug: req.params.article });
+    let comment = new Comment(req.body.comment);
+    comment.article = req.article;
+    comment.author = user;
 
-      return comment.save().then(function () {
-        req.article.comments.push(comment);
+    try {
+      await comment.save();
+      article.comments.push(comment);
+      await article.save();
+    } catch (e) {
+      console.log(e);
+    }
 
-        return req.article.save().then(function (article) {
-          res.json({ comment: comment.toJSONFor(user) });
-        });
-      });
-    })
-    .catch(next);
+    return res.json({ comment: comment.toJSONFor(user) });
+  });
 });
 
 router.get("/:article/comments", auth.optional, function (req, res, next) {
-  //не работает
   Promise.resolve(req.payload ? User.findById(req.payload.id) : null)
     .then(function (user) {
       return req.article
@@ -113,6 +114,7 @@ router.get("/:article/comments", auth.optional, function (req, res, next) {
         })
         .execPopulate()
         .then(function (article) {
+          console.log("req.article.comments", req.article.comments);
           return res.json({
             comments: req.article.comments.map(function (comment) {
               return comment.toJSONFor(user);
